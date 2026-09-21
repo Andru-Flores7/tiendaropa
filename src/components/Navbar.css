@@ -1,7 +1,11 @@
 .navbar {
   position: sticky; top: 0; z-index: 40;
-  background: var(--paper);
   border-bottom: 1px solid var(--line);
+}
+.navbar.glass {
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }
 .navbar-inner {
   display: flex; align-items: center; justify-content: space-between;
@@ -27,15 +31,21 @@
   color: var(--ink);
   border-color: var(--ink);
 }
-.navbar-cart {
-  position: relative;
+.navbar-btn {
   display: flex; align-items: center; justify-content: center;
   width: 40px; height: 40px;
   background: transparent;
-  border-radius: var(--radius-s);
-  transition: background var(--dur-s) var(--ease);
+  border: none;
+  border-radius: var(--radius-m);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all var(--dur-s) var(--ease);
 }
-.navbar-cart:hover { background: var(--paper-soft); }
+.navbar-btn:hover { background: var(--paper-soft); transform: scale(1.05); }
+
+.navbar-cart {
+  position: relative;
+}
 .navbar-cart-count {
   position: absolute; top: 2px; right: 2px;
   min-width: 16px; height: 16px;
@@ -48,4 +58,46 @@
 }
 @media (max-width: 640px) {
   .navbar-links { display: none; }
+  .navbar-hamburger { display: flex; }
+}
+@media (min-width: 641px) {
+  .navbar-hamburger { display: none; }
+}
+
+/* ── Menú móvil ── */
+.navbar-hamburger {
+  /* visibilidad controlada por media queries arriba */
+}
+
+.navbar-mobile-menu {
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  z-index: 39;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.navbar-mobile-menu a {
+  display: block;
+  padding: 0.75em 0.5em;
+  font-size: 1rem;
+  color: var(--ink-soft);
+  border-radius: var(--radius-m);
+  transition: all var(--dur-s) var(--ease);
+}
+.navbar-mobile-menu a:hover,
+.navbar-mobile-menu a.active {
+  color: var(--ink);
+  background: var(--paper-soft);
+  padding-left: 1em;
+}
+
+.navbar-mobile-divider {
+  height: 1px;
+  background: var(--line);
+  margin: var(--space-2) 0;
 }

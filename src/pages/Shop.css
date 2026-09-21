@@ -1,5 +1,60 @@
 .shop { padding: var(--space-5) var(--space-4) var(--space-6); }
+
+.shop-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
 .shop-title { margin-bottom: 0.2em; }
+
+/* ── Buscador ── */
+.shop-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 1 320px;
+}
+.shop-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+.shop-search-input {
+  width: 100%;
+  padding: 0.65em 2.4em 0.65em 2.4em;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  font-size: 0.9rem;
+  transition: border-color var(--dur-s) var(--ease), box-shadow var(--dur-s) var(--ease);
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+.shop-search-input:focus {
+  outline: none;
+  border-color: var(--moss);
+  box-shadow: 0 0 0 3px var(--moss-tint);
+}
+.shop-search-input::placeholder { color: var(--ink-faint); }
+/* Quita el botón nativo de "limpiar" en Chrome */
+.shop-search-input::-webkit-search-cancel-button { display: none; }
+.shop-search-clear {
+  position: absolute;
+  right: 10px;
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  border: none; background: var(--paper-soft);
+  border-radius: 50%; color: var(--ink-soft);
+  cursor: pointer;
+  transition: all var(--dur-s) var(--ease);
+}
+.shop-search-clear:hover { background: var(--line); color: var(--ink); }
+
+/* ── Filtros ── */
 .shop-filters {
   display: flex; flex-wrap: wrap; gap: 0.6em;
   margin-bottom: var(--space-4);
@@ -11,6 +66,36 @@
   font-size: 0.85rem;
   background: var(--white);
   transition: all var(--dur-s) var(--ease);
+  font-family: var(--font-body);
 }
 .shop-filters button:hover { border-color: var(--ink); }
 .shop-filters button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ── Paginación ── */
+.shop-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  margin-top: var(--space-5);
+}
+.pagination-btn {
+  display: flex; align-items: center; justify-content: center;
+  min-width: 40px; height: 40px;
+  padding: 0 0.5em;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--white);
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  transition: all var(--dur-s) var(--ease);
+  font-family: var(--font-body);
+}
+.pagination-btn:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
+.pagination-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.pagination-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .shop-header { flex-direction: column; }
+  .shop-search { flex: 1 1 100%; }
+}

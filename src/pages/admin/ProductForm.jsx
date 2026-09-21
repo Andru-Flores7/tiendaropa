@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trash2, ImagePlus } from 'lucide-react'
 import Modal from '../../components/Modal'
 import { supabase } from '../../lib/supabase'
 import { slugify } from '../../utils'
@@ -26,28 +27,54 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
         }
       : emptyForm
   )
-  const [imageFile, setImageFile] = useState(null)
+
+  // Imagen principal
+  const [mainImageFile, setMainImageFile] = useState(null)
+  // Imágenes adicionales: mezcla de URLs ya guardadas + nuevos Files
+  const [extraImages, setExtraImages] = useState(product?.images || [])
+  const [extraFiles, setExtraFiles] = useState([])
   const [saving, setSaving] = useState(false)
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
   }
 
-  async function uploadImage() {
-    const ext = imageFile.name.split('.').pop()
+  async function uploadFile(file) {
+    const ext = file.name.split('.').pop()
     const path = `${crypto.randomUUID()}.${ext}`
-    const { error } = await supabase.storage.from('product-images').upload(path, imageFile)
+    const { error } = await supabase.storage.from('product-images').upload(path, file)
     if (error) throw error
     const { data } = supabase.storage.from('product-images').getPublicUrl(path)
     return data.publicUrl
+  }
+
+  function handleExtraFilesChange(e) {
+    const files = Array.from(e.target.files || [])
+    setExtraFiles((prev) => [...prev, ...files])
+    e.target.value = '' // reset para poder seleccionar el mismo archivo de nuevo
+  }
+
+  function removeExtraUrl(url) {
+    setExtraImages((prev) => prev.filter((u) => u !== url))
+  }
+
+  function removeExtraFile(idx) {
+    setExtraFiles((prev) => prev.filter((_, i) => i !== idx))
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
     try {
+      // 1. Imagen principal
       let image_url = product?.image_url || null
-      if (imageFile) image_url = await uploadImage()
+      if (mainImageFile) image_url = await uploadFile(mainImageFile)
+
+      // 2. Subir nuevos archivos extra
+      const uploadedExtras = await Promise.all(extraFiles.map(uploadFile))
+
+      // 3. Combinar URLs guardadas + recién subidas
+      const images = [...extraImages, ...uploadedExtras]
 
       const payload = {
         name: form.name,
@@ -61,6 +88,7 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
         colors: form.colors ? form.colors.split(',').map((s) => s.trim()).filter(Boolean) : [],
         is_active: form.is_active,
         image_url,
+        images,
       }
 
       const { error } = product
@@ -134,13 +162,48 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
           </div>
         </div>
 
+        {/* Imagen principal */}
         <div className="field">
           <label htmlFor="pimage">Imagen principal</label>
           <input id="pimage" type="file" accept="image/*" className="input"
-            onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
-          {product?.image_url && !imageFile && (
-            <img src={product.image_url} alt="" style={{ width: 64, height: 80, objectFit: 'cover', marginTop: 8, borderRadius: 4 }} />
+            onChange={(e) => setMainImageFile(e.target.files?.[0] || null)} />
+          {product?.image_url && !mainImageFile && (
+            <img src={product.image_url} alt="" style={{ width: 64, height: 80, objectFit: 'cover', marginTop: 8, borderRadius: 6 }} />
           )}
+        </div>
+
+        {/* Imágenes adicionales */}
+        <div className="field">
+          <label>Imágenes adicionales</label>
+          <div className="pf-extra-images">
+            {/* Miniaturas de URLs ya guardadas */}
+            {extraImages.map((url) => (
+              <div key={url} className="pf-thumb">
+                <img src={url} alt="" />
+                <button type="button" className="pf-thumb-remove" onClick={() => removeExtraUrl(url)} aria-label="Eliminar imagen">
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+            {/* Miniaturas de archivos nuevos pendientes de subir */}
+            {extraFiles.map((file, idx) => (
+              <div key={idx} className="pf-thumb pf-thumb-pending">
+                <img src={URL.createObjectURL(file)} alt="" />
+                <button type="button" className="pf-thumb-remove" onClick={() => removeExtraFile(idx)} aria-label="Eliminar imagen">
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+            {/* Botón de añadir */}
+            <label className="pf-thumb pf-thumb-add" aria-label="Agregar imágenes">
+              <ImagePlus size={20} />
+              <span>Agregar</span>
+              <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleExtraFilesChange} />
+            </label>
+          </div>
+          <p style={{ fontSize: '0.78rem', color: 'var(--ink-faint)', marginTop: '0.4em' }}>
+            {extraImages.length + extraFiles.length} imagen{extraImages.length + extraFiles.length !== 1 ? 'es' : ''} adicional{extraImages.length + extraFiles.length !== 1 ? 'es' : ''}
+          </p>
         </div>
 
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5em', fontSize: '0.88rem', marginBottom: 'var(--space-3)' }}>

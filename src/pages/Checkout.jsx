@@ -23,38 +23,76 @@ export default function Checkout() {
     if (items.length === 0) return
     setSubmitting(true)
 
-    const { data: order, error } = await supabase
-      .from('orders')
-      .insert({
-        customer_name: form.name,
-        customer_email: form.email,
-        customer_phone: form.phone,
-        shipping_address: form.address,
-        total,
-      })
-      .select()
-      .single()
+    try {
+      // 1. Crear el pedido en orders
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          customer_name: form.name,
+          customer_email: form.email,
+          customer_phone: form.phone,
+          shipping_address: form.address,
+          total,
+        })
+        .select()
+        .single()
 
-    if (error) {
-      showToast('No se pudo crear el pedido. Intenta de nuevo.', 'error')
+      if (orderError) throw new Error('No se pudo crear el pedido.')
+
+      // 2. Insertar los ítems (el trigger de Supabase descuenta stock automáticamente)
+      const orderItems = items.map((i) => ({
+        order_id: order.id,
+        product_id: i.id,
+        product_name: i.name,
+        unit_price: i.price,
+        quantity: i.quantity,
+        size: i.size || null,
+        color: i.color || null,
+      }))
+
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItems)
+
+      if (itemsError) {
+        // El trigger lanzó un error de stock insuficiente u otro problema
+        // Borramos el pedido huérfano para no dejar basura en la base de datos
+        await supabase.from('orders').delete().eq('id', order.id)
+
+        // El mensaje viene del trigger: "Stock insuficiente para el producto..."
+        const msg = itemsError.message?.includes('Stock insuficiente')
+          ? itemsError.message
+          : 'Uno o más productos no tienen stock suficiente. Revisá tu carrito.'
+        throw new Error(msg)
+      }
+
+      // 3. Llamar a la Edge Function para enviar emails (no bloqueante)
+      // TODO: Descomentar cuando hayas configurado la Edge Function en Supabase
+      // supabase.functions
+      //   .invoke('notify-order', {
+      //     body: {
+      //       order_id: order.id,
+      //       customer_name: form.name,
+      //       customer_email: form.email,
+      //       customer_phone: form.phone || null,
+      //       shipping_address: form.address,
+      //       total,
+      //       items: items.map((i) => ({
+      //         product_name: i.name,
+      //         quantity: i.quantity,
+      //         unit_price: i.price,
+      //         size: i.size || null,
+      //         color: i.color || null,
+      //       })),
+      //     },
+      //   })
+      //   .catch((err) => console.warn('Email notification failed:', err))
+
+      clearCart()
+      navigate('/pedido-confirmado', { state: { orderId: order.id } })
+    } catch (err) {
+      showToast(err.message || 'Ocurrió un error al procesar tu pedido.', 'error')
+    } finally {
       setSubmitting(false)
-      return
     }
-
-    const orderItems = items.map((i) => ({
-      order_id: order.id,
-      product_id: i.id,
-      product_name: i.name,
-      unit_price: i.price,
-      quantity: i.quantity,
-      size: i.size || null,
-      color: i.color || null,
-    }))
-    await supabase.from('order_items').insert(orderItems)
-
-    clearCart()
-    setSubmitting(false)
-    navigate('/pedido-confirmado', { state: { orderId: order.id } })
   }
 
   if (items.length === 0) {
