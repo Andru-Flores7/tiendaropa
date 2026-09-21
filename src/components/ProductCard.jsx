@@ -10,7 +10,7 @@ export default function ProductCard({ product }) {
       <div className="product-card-image">
         {product.image_url
           ? <img src={product.image_url} alt={product.name} loading="lazy" />
-          : <div className="product-card-placeholder" aria-hidden="true">Alma</div>}
+          : <div className="product-card-placeholder" aria-hidden="true">Russo Indumentaria</div>}
         {product.stock === 0 && <span className="product-card-tag">Agotado</span>}
       </div>
       <div className="product-card-info">

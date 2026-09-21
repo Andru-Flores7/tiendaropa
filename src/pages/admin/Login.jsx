@@ -29,7 +29,7 @@ export default function Login() {
   return (
     <div className="login-shell">
       <form className="login-card" onSubmit={handleSubmit}>
-        <h1>Alma</h1>
+        <h1>Russo Indumentaria</h1>
         <p>Acceso de administración</p>
 
         <div className="field">

@@ -60,7 +60,7 @@ export default function ProductDetail() {
         <div className="product-detail-main-image">
           {gallery[activeImage]
             ? <img src={gallery[activeImage]} alt={product.name} />
-            : <div className="product-card-placeholder">Alma</div>}
+            : <div className="product-card-placeholder">Russo Indumentaria</div>}
         </div>
         {gallery.length > 1 && (
           <div className="product-detail-thumbs">

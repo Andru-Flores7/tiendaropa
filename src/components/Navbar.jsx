@@ -10,7 +10,7 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <div className="container navbar-inner">
-        <Link to="/" className="navbar-logo">Alma</Link>
+        <Link to="/" className="navbar-logo">Russo Indumentaria</Link>
 
         <nav className="navbar-links">
           <NavLink to="/" end className={({isActive}) => isActive ? 'active' : ''}>Inicio</NavLink>
