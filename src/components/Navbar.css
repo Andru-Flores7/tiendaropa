@@ -1,0 +1,51 @@
+.navbar {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.navbar-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 72px;
+}
+.navbar-logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.navbar-links {
+  display: flex; gap: var(--space-4);
+  font-size: 0.92rem;
+}
+.navbar-links a {
+  color: var(--ink-soft);
+  padding-bottom: 4px;
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur-s) var(--ease), border-color var(--dur-s) var(--ease);
+}
+.navbar-links a:hover, .navbar-links a.active {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.navbar-cart {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  background: transparent;
+  border-radius: var(--radius-s);
+  transition: background var(--dur-s) var(--ease);
+}
+.navbar-cart:hover { background: var(--paper-soft); }
+.navbar-cart-count {
+  position: absolute; top: 2px; right: 2px;
+  min-width: 16px; height: 16px;
+  background: var(--moss);
+  color: var(--white);
+  font-size: 0.66rem; font-weight: 600;
+  border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  animation: scaleIn var(--dur-s) var(--ease);
+}
+@media (max-width: 640px) {
+  .navbar-links { display: none; }
+}

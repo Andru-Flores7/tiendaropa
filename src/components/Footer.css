@@ -1,0 +1,20 @@
+.footer {
+  border-top: 1px solid var(--line);
+  margin-top: var(--space-6);
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-2);
+  padding: var(--space-4) 0;
+}
+.footer-logo { font-family: var(--font-display); font-size: 1.1rem; }
+.footer p { font-size: 0.82rem; color: var(--ink-faint); margin: 0; }
+.footer-admin-btn {
+  color: var(--ink-faint);
+  transition: color var(--dur-s) var(--ease);
+  display: flex;
+  align-items: center;
+}
+.footer-admin-btn:hover {
+  color: var(--ink);
+}

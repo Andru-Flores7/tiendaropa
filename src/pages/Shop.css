@@ -1,0 +1,16 @@
+.shop { padding: var(--space-5) var(--space-4) var(--space-6); }
+.shop-title { margin-bottom: 0.2em; }
+.shop-filters {
+  display: flex; flex-wrap: wrap; gap: 0.6em;
+  margin-bottom: var(--space-4);
+}
+.shop-filters button {
+  padding: 0.5em 1.1em;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  background: var(--white);
+  transition: all var(--dur-s) var(--ease);
+}
+.shop-filters button:hover { border-color: var(--ink); }
+.shop-filters button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }

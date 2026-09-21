@@ -1,0 +1,54 @@
+.product-detail {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-4) var(--space-6);
+}
+.product-detail-main-image {
+  aspect-ratio: 4 / 5;
+  background: var(--paper-soft);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  animation: fadeIn var(--dur-m) var(--ease);
+}
+.product-detail-main-image img { width: 100%; height: 100%; object-fit: cover; }
+.product-detail-thumbs {
+  display: flex; gap: 0.6em;
+  margin-top: var(--space-2);
+}
+.product-detail-thumbs button {
+  width: 60px; height: 76px;
+  border-radius: var(--radius-s);
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color var(--dur-s) var(--ease);
+}
+.product-detail-thumbs button.active { border-color: var(--ink); }
+.product-detail-thumbs img { width: 100%; height: 100%; object-fit: cover; }
+
+.product-detail-info { max-width: 440px; }
+.product-detail-price {
+  font-size: 1.3rem; color: var(--ink);
+  margin: var(--space-2) 0 var(--space-3);
+}
+.product-detail-desc { margin-bottom: var(--space-4); }
+
+.product-detail-option { margin-bottom: var(--space-3); }
+.product-detail-option > span {
+  display: block; font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 0.5em;
+}
+.option-pills { display: flex; flex-wrap: wrap; gap: 0.5em; }
+.option-pills button {
+  padding: 0.5em 1em;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  font-size: 0.85rem;
+  background: var(--white);
+  transition: all var(--dur-s) var(--ease);
+}
+.option-pills button:hover { border-color: var(--ink); }
+.option-pills button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+@media (max-width: 760px) {
+  .product-detail { grid-template-columns: 1fr; }
+}
