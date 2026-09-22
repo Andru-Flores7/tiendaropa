@@ -24,8 +24,8 @@ export default function AdminLayout() {
           ))}
         </nav>
         <div className="admin-sidebar-footer">
-          <span>{profile?.full_name || 'Administrador'}</span>
-          <button className="btn-ghost btn-sm" onClick={signOut}>Salir</button>
+     
+          <button style={{color: 'red', borderRadius: '5px', padding: '10px', cursor: 'pointer',backgroundColor: 'red', }}  onClick={signOut}>Salir</button>
         </div>
       </aside>
       <main className="admin-main">

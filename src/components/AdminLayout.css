@@ -2,13 +2,36 @@
   display: grid;
   grid-template-columns: 240px 1fr;
   min-height: 100vh;
+  /* Gris metalizado */
+  background: linear-gradient(135deg, #b0b5b9 0%, #8c92ac 100%);
 }
 .admin-sidebar {
-  background: var(--ink);
-  color: var(--paper);
+  background: transparent;
+  color: #000;
   display: flex; flex-direction: column;
   padding: var(--space-4) var(--space-3);
   position: sticky; top: 0; height: 100vh;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Reglas globales para forzar texto negro y hover rojo en admin */
+.admin-shell * {
+  color: #e6e4e49e !important;
+}
+
+.admin-shell a:hover,
+.admin-shell button:hover,
+.admin-shell span:hover,
+.admin-shell p:hover,
+.admin-shell h1:hover,
+.admin-shell h2:hover,
+.admin-shell h3:hover,
+.admin-shell td:hover,
+.admin-shell th:hover,
+.admin-shell label:hover,
+.admin-shell strong:hover {
+  color: #efe5ce !important; /* Color crema elegante */
+  text-shadow: 0 0 5px rgba(75, 168, 39, 0.1); /* Ligero sombreado para que resalte en el fondo gris */
 }
 .admin-sidebar-brand {
   font-family: var(--font-display);

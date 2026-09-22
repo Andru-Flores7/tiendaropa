@@ -8,6 +8,7 @@ import { useToast } from '../../context/ToastContext'
 const emptyForm = {
   name: '', description: '', price: '', compare_at_price: '',
   category_id: '', stock: '0', sizes: '', colors: '', is_active: true,
+  image_url: ''
 }
 
 export default function ProductForm({ product, categories, onClose, onSaved }) {
@@ -24,6 +25,7 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
           sizes: (product.sizes || []).join(', '),
           colors: (product.colors || []).join(', '),
           is_active: product.is_active,
+          image_url: product.image_url || '',
         }
       : emptyForm
   )
@@ -33,10 +35,17 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
   // Imágenes adicionales: mezcla de URLs ya guardadas + nuevos Files
   const [extraImages, setExtraImages] = useState(product?.images || [])
   const [extraFiles, setExtraFiles] = useState([])
+  const [newExtraUrl, setNewExtraUrl] = useState('')
   const [saving, setSaving] = useState(false)
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
+  }
+
+  function handleAddExtraUrl() {
+    if (!newExtraUrl) return
+    setExtraImages((prev) => [...prev, newExtraUrl])
+    setNewExtraUrl('')
   }
 
   async function uploadFile(file) {
@@ -67,7 +76,7 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
     setSaving(true)
     try {
       // 1. Imagen principal
-      let image_url = product?.image_url || null
+      let image_url = form.image_url || null
       if (mainImageFile) image_url = await uploadFile(mainImageFile)
 
       // 2. Subir nuevos archivos extra
@@ -164,11 +173,25 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
 
         {/* Imagen principal */}
         <div className="field">
-          <label htmlFor="pimage">Imagen principal</label>
-          <input id="pimage" type="file" accept="image/*" className="input"
-            onChange={(e) => setMainImageFile(e.target.files?.[0] || null)} />
-          {product?.image_url && !mainImageFile && (
-            <img src={product.image_url} alt="" style={{ width: 64, height: 80, objectFit: 'cover', marginTop: 8, borderRadius: 6 }} />
+          <label>Imagen principal (Archivo o URL)</label>
+          <div className="field-row">
+            <input type="file" accept="image/*" className="input"
+              onChange={(e) => {
+                setMainImageFile(e.target.files?.[0] || null)
+                if (e.target.files?.[0]) update('image_url', '')
+              }} />
+            <input type="url" className="input" placeholder="O pega una URL"
+              value={form.image_url} 
+              onChange={(e) => {
+                update('image_url', e.target.value)
+                setMainImageFile(null)
+              }} />
+          </div>
+          {form.image_url && !mainImageFile && (
+            <img src={form.image_url} alt="" style={{ width: 64, height: 80, objectFit: 'cover', marginTop: 8, borderRadius: 6 }} />
+          )}
+          {mainImageFile && (
+            <img src={URL.createObjectURL(mainImageFile)} alt="" style={{ width: 64, height: 80, objectFit: 'cover', marginTop: 8, borderRadius: 6 }} />
           )}
         </div>
 
@@ -200,6 +223,10 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
               <span>Agregar</span>
               <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleExtraFilesChange} />
             </label>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5em', marginTop: '0.5em' }}>
+            <input type="url" className="input" placeholder="Añadir imagen por URL" value={newExtraUrl} onChange={(e) => setNewExtraUrl(e.target.value)} />
+            <button type="button" className="btn btn-outline btn-sm" onClick={handleAddExtraUrl}>Añadir URL</button>
           </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--ink-faint)', marginTop: '0.4em' }}>
             {extraImages.length + extraFiles.length} imagen{extraImages.length + extraFiles.length !== 1 ? 'es' : ''} adicional{extraImages.length + extraFiles.length !== 1 ? 'es' : ''}
