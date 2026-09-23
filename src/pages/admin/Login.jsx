@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import './Login.css'
 
@@ -29,6 +29,9 @@ export default function Login() {
   return (
     <div className="login-shell">
       <form className="login-card" onSubmit={handleSubmit}>
+        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+          <Link to="/" className="btn btn-ghost" style={{ fontSize: '0.8rem' }}>← Volver al inicio</Link>
+        </div>
         <h1>Russo Indumentaria</h1>
         <p>Acceso de administración</p>
 

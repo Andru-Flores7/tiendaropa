@@ -1,6 +1,6 @@
 .hero {
-  background: var(--gradient-elegant);
-  border-bottom: 1px solid var(--line);
+  background: linear-gradient(to bottom, rgba(15, 15, 17, 0.4), rgba(15, 15, 17, 0.9)), url('/banner.jpg') center/cover no-repeat;
+  border-bottom: 2px solid var(--line);
   min-height: 80vh;
   display: flex;
   align-items: center;

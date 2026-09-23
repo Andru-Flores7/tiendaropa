@@ -1,8 +1,8 @@
 export function formatPrice(value) {
-  return new Intl.NumberFormat('es-ES', {
+  return new Intl.NumberFormat('es-AR', {
     style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
+    currency: 'ARS',
+    minimumFractionDigits: 0,
   }).format(Number(value) || 0)
 }
 

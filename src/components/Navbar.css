@@ -6,9 +6,8 @@
   border-top: none;
   border-left: none;
   border-right: none;
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 2px solid var(--line);
+  background: var(--paper) !important;
 }
 .navbar-inner {
   display: flex; align-items: center; justify-content: space-between;

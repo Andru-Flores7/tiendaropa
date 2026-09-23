@@ -24,12 +24,7 @@ export default function Navbar() {
           <NavLink to="/tienda" className={({isActive}) => isActive ? 'active' : ''}>Tienda</NavLink>
         </nav>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <button className="navbar-btn" onClick={toggleTheme} aria-label="Alternar tema">
-            {theme === 'dark' ? <Sun size={20} strokeWidth={1.5} /> : <Moon size={20} strokeWidth={1.5} />}
-          </button>
-
-          <button className="navbar-btn navbar-cart" onClick={() => setIsOpen(true)} aria-label="Abrir carrito">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>          <button className="navbar-btn navbar-cart" onClick={() => setIsOpen(true)} aria-label="Abrir carrito">
             <ShoppingBag size={20} strokeWidth={1.5} />
             {count > 0 && <span className="navbar-cart-count">{count}</span>}
           </button>
