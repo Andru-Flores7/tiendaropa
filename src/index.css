@@ -39,7 +39,7 @@
   --radius-s: 0px; /* Bordes rectos para brutalismo */
   --radius-m: 4px;
   --shadow-card: 4px 4px 0px var(--moss);
-  --shadow-pop: 8px 8px 0px var(--gold);
+  /* --shadow-pop: 8px 8px 0px var(--gold); */
   --shadow-diffused: 0 0 40px rgba(255, 7, 58, 0.15);
   --gradient-elegant: linear-gradient(135deg, var(--paper) 0%, #17171C 100%);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
