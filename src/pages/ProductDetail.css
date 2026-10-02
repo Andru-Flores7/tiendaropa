@@ -43,10 +43,11 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-s);
   font-size: 0.85rem;
-  background: var(--white);
+  background: var(--paper-soft);
+  color: var(--ink-soft);
   transition: all var(--dur-s) var(--ease);
 }
-.option-pills button:hover { border-color: var(--ink); }
+.option-pills button:hover { border-color: var(--ink); color: var(--ink); }
 .option-pills button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
 @media (max-width: 760px) {

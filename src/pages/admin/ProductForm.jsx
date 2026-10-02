@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Trash2, ImagePlus } from 'lucide-react'
+import { Trash2, ImagePlus, Star } from 'lucide-react'
 import Modal from '../../components/Modal'
 import { supabase } from '../../lib/supabase'
 import { slugify } from '../../utils'
@@ -8,7 +8,16 @@ import { useToast } from '../../context/ToastContext'
 const emptyForm = {
   name: '', description: '', price: '', compare_at_price: '',
   category_id: '', stock: '0', sizes: '', colors: '', is_active: true,
-  image_url: ''
+}
+
+// Construye el pool inicial a partir del producto existente
+function buildInitialPool(product) {
+  const pool = []
+  if (product?.image_url) pool.push({ type: 'url', value: product.image_url })
+  for (const url of product?.images || []) {
+    if (url) pool.push({ type: 'url', value: url })
+  }
+  return pool
 }
 
 export default function ProductForm({ product, categories, onClose, onSaved }) {
@@ -25,73 +34,79 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
           sizes: (product.sizes || []).join(', '),
           colors: (product.colors || []).join(', '),
           is_active: product.is_active,
-          image_url: product.image_url || '',
         }
       : emptyForm
   )
 
-  // Imagen principal
-  const [mainImageFile, setMainImageFile] = useState(null)
-  // Imágenes adicionales: mezcla de URLs ya guardadas + nuevos Files
-  const [extraImages, setExtraImages] = useState(product?.images || [])
-  const [extraFiles, setExtraFiles] = useState([])
-  const [newExtraUrl, setNewExtraUrl] = useState('')
+  // Pool unificado: [0] = imagen principal, resto = adicionales
+  const [imagePool, setImagePool] = useState(() => buildInitialPool(product))
+  const [newUrl, setNewUrl] = useState('')
   const [saving, setSaving] = useState(false)
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
   }
 
-  function handleAddExtraUrl() {
-    if (!newExtraUrl) return
-    setExtraImages((prev) => [...prev, newExtraUrl])
-    setNewExtraUrl('')
+  function handleFilesAdd(e) {
+    const files = Array.from(e.target.files || [])
+    const newItems = files.map((file) => ({
+      type: 'file',
+      file,
+      preview: URL.createObjectURL(file),
+    }))
+    setImagePool((prev) => [...prev, ...newItems])
+    e.target.value = ''
+  }
+
+  function handleUrlAdd() {
+    if (!newUrl.trim()) return
+    setImagePool((prev) => [...prev, { type: 'url', value: newUrl.trim() }])
+    setNewUrl('')
+  }
+
+  function removeImage(idx) {
+    setImagePool((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  // Mueve la imagen al índice 0 para hacerla principal
+  function makeMain(idx) {
+    setImagePool((prev) => {
+      const next = [...prev]
+      const [item] = next.splice(idx, 1)
+      next.unshift(item)
+      return next
+    })
   }
 
   async function uploadFile(file) {
     const ext = file.name.split('.').pop()
     const path = `${crypto.randomUUID()}.${ext}`
-    const { error } = await supabase.storage.from('product-images').upload(path, file)
-    if (error) throw error
+    const { error } = await supabase.storage
+      .from('product-images')
+      .upload(path, file, { contentType: file.type, upsert: false })
+    if (error) {
+      console.error('[uploadFile] Supabase storage error:', error)
+      throw new Error(`Error al subir imagen: ${error.message}`)
+    }
     const { data } = supabase.storage.from('product-images').getPublicUrl(path)
     return data.publicUrl
-  }
-
-  function handleExtraFilesChange(e) {
-    const files = Array.from(e.target.files || [])
-    setExtraFiles((prev) => [...prev, ...files])
-    e.target.value = '' // reset para poder seleccionar el mismo archivo de nuevo
-  }
-
-  function removeExtraUrl(url) {
-    setExtraImages((prev) => prev.filter((u) => u !== url))
-  }
-
-  function removeExtraFile(idx) {
-    setExtraFiles((prev) => prev.filter((_, i) => i !== idx))
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
     try {
-      // 1. Imagen principal
-      let image_url = form.image_url || null
-      if (mainImageFile) {
-        image_url = await uploadFile(mainImageFile)
-        if (!image_url) throw new Error('No se pudo obtener la URL de la imagen principal')
-      }
+      // Resolver todo el pool a URLs finales (subir archivos, mantener URLs)
+      const resolvedUrls = await Promise.all(
+        imagePool.map(async (item) => {
+          if (item.type === 'url') return item.value
+          return await uploadFile(item.file)
+        })
+      )
 
-      // 2. Subir nuevos archivos extra
-      const uploadedExtras = await Promise.all(extraFiles.map(uploadFile))
-
-      // 3. Combinar URLs guardadas + recién subidas
-      const images = [...extraImages, ...uploadedExtras]
-
-      // 4. Si no hay imagen principal pero sí hay imágenes extra, usar la primera como principal
-      if (!image_url && images.length > 0) {
-        image_url = images.shift()
-      }
+      // [0] = imagen principal, el resto = galería adicional
+      const image_url = resolvedUrls[0] || null
+      const images = resolvedUrls.slice(1)
 
       const payload = {
         name: form.name,
@@ -179,65 +194,75 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
           </div>
         </div>
 
-        {/* Imagen principal */}
+        {/* ── Imágenes (pool unificado) ── */}
         <div className="field">
-          <label>Imagen principal (Archivo o URL)</label>
-          <div className="field-row">
-            <input type="file" accept="image/*" className="input"
-              onChange={(e) => {
-                setMainImageFile(e.target.files?.[0] || null)
-                if (e.target.files?.[0]) update('image_url', '')
-              }} />
-            <input type="url" className="input" placeholder="O pega una URL"
-              value={form.image_url} 
-              onChange={(e) => {
-                update('image_url', e.target.value)
-                setMainImageFile(null)
-              }} />
-          </div>
-          {form.image_url && !mainImageFile && (
-            <img src={form.image_url} alt="" style={{ width: 64, height: 80, objectFit: 'cover', marginTop: 8, borderRadius: 6 }} />
-          )}
-          {mainImageFile && (
-            <img src={URL.createObjectURL(mainImageFile)} alt="" style={{ width: 64, height: 80, objectFit: 'cover', marginTop: 8, borderRadius: 6 }} />
-          )}
-        </div>
+          <label>
+            Imágenes
+            <span style={{ fontWeight: 400, color: 'var(--ink-faint)', marginLeft: '0.4em', fontSize: '0.8rem' }}>
+              — la primera ⭐ es la portada del producto
+            </span>
+          </label>
 
-        {/* Imágenes adicionales */}
-        <div className="field">
-          <label>Imágenes adicionales</label>
           <div className="pf-extra-images">
-            {/* Miniaturas de URLs ya guardadas */}
-            {extraImages.map((url) => (
-              <div key={url} className="pf-thumb">
-                <img src={url} alt="" />
-                <button type="button" className="pf-thumb-remove" onClick={() => removeExtraUrl(url)} aria-label="Eliminar imagen">
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            ))}
-            {/* Miniaturas de archivos nuevos pendientes de subir */}
-            {extraFiles.map((file, idx) => (
-              <div key={idx} className="pf-thumb pf-thumb-pending">
-                <img src={URL.createObjectURL(file)} alt="" />
-                <button type="button" className="pf-thumb-remove" onClick={() => removeExtraFile(idx)} aria-label="Eliminar imagen">
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            ))}
-            {/* Botón de añadir */}
+            {imagePool.map((item, idx) => {
+              const src = item.type === 'url' ? item.value : item.preview
+              const isMain = idx === 0
+              return (
+                <div key={idx} className={`pf-thumb ${isMain ? 'pf-thumb-main' : ''}`}>
+                  <img src={src} alt="" />
+                  {isMain && (
+                    <span className="pf-thumb-badge" title="Imagen principal">⭐</span>
+                  )}
+                  {!isMain && (
+                    <button
+                      type="button"
+                      className="pf-thumb-star"
+                      onClick={() => makeMain(idx)}
+                      title="Hacer principal"
+                      aria-label="Hacer imagen principal"
+                    >
+                      <Star size={11} />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="pf-thumb-remove"
+                    onClick={() => removeImage(idx)}
+                    aria-label="Eliminar imagen"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              )
+            })}
+
+            {/* Botón añadir archivos */}
             <label className="pf-thumb pf-thumb-add" aria-label="Agregar imágenes">
               <ImagePlus size={20} />
               <span>Agregar</span>
-              <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleExtraFilesChange} />
+              <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleFilesAdd} />
             </label>
           </div>
+
+          {/* Añadir por URL */}
           <div style={{ display: 'flex', gap: '0.5em', marginTop: '0.5em' }}>
-            <input type="url" className="input" placeholder="Añadir imagen por URL" value={newExtraUrl} onChange={(e) => setNewExtraUrl(e.target.value)} />
-            <button type="button" className="btn btn-outline btn-sm" onClick={handleAddExtraUrl}>Añadir URL</button>
+            <input
+              type="url"
+              className="input"
+              placeholder="Añadir imagen por URL"
+              value={newUrl}
+              onChange={(e) => setNewUrl(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleUrlAdd())}
+            />
+            <button type="button" className="btn btn-outline btn-sm" onClick={handleUrlAdd}>
+              Añadir URL
+            </button>
           </div>
+
           <p style={{ fontSize: '0.78rem', color: 'var(--ink-faint)', marginTop: '0.4em' }}>
-            {extraImages.length + extraFiles.length} imagen{extraImages.length + extraFiles.length !== 1 ? 'es' : ''} adicional{extraImages.length + extraFiles.length !== 1 ? 'es' : ''}
+            {imagePool.length === 0
+              ? 'Sin imágenes — agrega al menos una para mostrar el producto'
+              : `${imagePool.length} imagen${imagePool.length !== 1 ? 'es' : ''} — la primera se usará como portada`}
           </p>
         </div>
 
@@ -257,3 +282,4 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
     </Modal>
   )
 }
+

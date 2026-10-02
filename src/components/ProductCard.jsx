@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, X } from 'lucide-react'
 import { formatPrice } from '../utils'
 import { useCart } from '../context/CartContext'
@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext'
 import './ProductCard.css'
 
 export default function ProductCard({ product }) {
+  const navigate = useNavigate()
   const { addItem } = useCart()
   const { showToast } = useToast()
   
@@ -15,7 +16,15 @@ export default function ProductCard({ product }) {
   const [color, setColor] = useState(product?.colors?.[0] || '')
   const onSale = product.compare_at_price && product.compare_at_price > product.price
 
+  const handleCardClick = (e) => {
+    // Navigate unless clicking on a button or the modal
+    if (!e.target.closest('button') && !e.target.closest('.modal-overlay')) {
+      navigate(`/producto/${product.slug}`)
+    }
+  }
+
   const handleQuickAdd = (e) => {
+    e.stopPropagation()
     e.preventDefault()
     if (product.sizes?.length > 0 || product.colors?.length > 0) {
       setShowModal(true)
@@ -26,6 +35,7 @@ export default function ProductCard({ product }) {
   }
 
   const handleConfirmAdd = (e) => {
+    e.stopPropagation()
     e.preventDefault()
     if (product.sizes?.length && !size) return showToast('Elige una talla', 'error')
     if (product.colors?.length && !color) return showToast('Elige un color', 'error')
@@ -35,7 +45,7 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <Link to={`/producto/${product.slug}`} className="product-card">
+    <div className="product-card" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
       <div className="product-card-image">
         {product.image_url
           ? <img src={product.image_url} alt={product.name} loading="lazy" />
@@ -57,22 +67,22 @@ export default function ProductCard({ product }) {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={(e) => { e.preventDefault(); setShowModal(false); }}>
+        <div className="modal-overlay" onClick={(e) => { e.stopPropagation(); setShowModal(false); }}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <div className="modal-head">
               <h3>Añadir {product.name}</h3>
-              <button className="btn-ghost" onClick={(e) => { e.preventDefault(); setShowModal(false); }} aria-label="Cerrar"><X size={20} /></button>
+              <button className="btn-ghost" onClick={(e) => { e.stopPropagation(); setShowModal(false); }} aria-label="Cerrar"><X size={20} /></button>
             </div>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {product.sizes?.length > 0 && (
                 <div className="field">
-                  <label>Talla</label>
+                  <label style={{ color: 'var(--ink)' }}>Talla</label>
                   <div className="option-pills" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {product.sizes.map((s) => (
                       <button 
                         key={s} 
                         className={`btn btn-sm ${s === size ? 'btn-primary' : 'btn-outline'}`} 
-                        onClick={(e) => { e.preventDefault(); setSize(s); }}
+                        onClick={(e) => { e.stopPropagation(); setSize(s); }}
                       >
                         {s}
                       </button>
@@ -82,13 +92,13 @@ export default function ProductCard({ product }) {
               )}
               {product.colors?.length > 0 && (
                 <div className="field">
-                  <label>Color</label>
+                  <label style={{ color: 'var(--ink)' }}>Color</label>
                   <div className="option-pills" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {product.colors.map((c) => (
                       <button 
                         key={c} 
                         className={`btn btn-sm ${c === color ? 'btn-primary' : 'btn-outline'}`} 
-                        onClick={(e) => { e.preventDefault(); setColor(c); }}
+                        onClick={(e) => { e.stopPropagation(); setColor(c); }}
                       >
                         {c}
                       </button>
@@ -98,12 +108,12 @@ export default function ProductCard({ product }) {
               )}
             </div>
             <div className="modal-actions">
-              <button className="btn btn-outline" onClick={(e) => { e.preventDefault(); setShowModal(false); }}>Cancelar</button>
+              <button className="btn btn-outline" onClick={(e) => { e.stopPropagation(); setShowModal(false); }}>Cancelar</button>
               <button className="btn btn-primary" onClick={handleConfirmAdd}>Añadir al carrito</button>
             </div>
           </div>
         </div>
       )}
-    </Link>
+    </div>
   )
 }

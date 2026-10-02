@@ -28,7 +28,7 @@
   padding: 0.65em 2.4em 0.65em 2.4em;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--white);
+  background: var(--paper-soft);
   font-size: 0.9rem;
   transition: border-color var(--dur-s) var(--ease), box-shadow var(--dur-s) var(--ease);
   font-family: var(--font-body);
@@ -64,11 +64,12 @@
   border: 1px solid var(--line);
   border-radius: 999px;
   font-size: 0.85rem;
-  background: var(--white);
+  background: var(--paper-soft);
+  color: var(--ink-soft);
   transition: all var(--dur-s) var(--ease);
   font-family: var(--font-body);
 }
-.shop-filters button:hover { border-color: var(--ink); }
+.shop-filters button:hover { border-color: var(--ink); color: var(--ink); }
 .shop-filters button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
 /* ── Paginación ── */
@@ -85,7 +86,7 @@
   padding: 0 0.5em;
   border: 1px solid var(--line);
   border-radius: var(--radius-m);
-  background: var(--white);
+  background: var(--paper-soft);
   font-size: 0.9rem;
   color: var(--ink-soft);
   transition: all var(--dur-s) var(--ease);
