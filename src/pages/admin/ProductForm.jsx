@@ -77,13 +77,21 @@ export default function ProductForm({ product, categories, onClose, onSaved }) {
     try {
       // 1. Imagen principal
       let image_url = form.image_url || null
-      if (mainImageFile) image_url = await uploadFile(mainImageFile)
+      if (mainImageFile) {
+        image_url = await uploadFile(mainImageFile)
+        if (!image_url) throw new Error('No se pudo obtener la URL de la imagen principal')
+      }
 
       // 2. Subir nuevos archivos extra
       const uploadedExtras = await Promise.all(extraFiles.map(uploadFile))
 
       // 3. Combinar URLs guardadas + recién subidas
       const images = [...extraImages, ...uploadedExtras]
+
+      // 4. Si no hay imagen principal pero sí hay imágenes extra, usar la primera como principal
+      if (!image_url && images.length > 0) {
+        image_url = images.shift()
+      }
 
       const payload = {
         name: form.name,
